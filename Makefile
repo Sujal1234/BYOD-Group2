@@ -1,16 +1,16 @@
 CC = gcc
-CFLAGS = -MMD -Wall -Wextra -pedantic -g
+CFLAGS = -MMD -Wall -Wextra -Iinclude -pedantic -g
 
-SRC = $(wildcard *.c)
-OBJ = $(SRC:%.c=obj/%.o)
-DEP = $(SRC:%.c=obj/%.d)
+SRC = $(wildcard src/*.c)
+OBJ = $(SRC:src/%.c=obj/%.o)
+DEP = $(SRC:src/%.c=obj/%.d)
 
 EXE = out
 
 $(EXE) : $(OBJ)
 	$(CC) $^ -o $@
 
-obj/%.o : %.c
+obj/%.o : src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 -include $(DEP)
