@@ -14,7 +14,9 @@ typedef struct {
     size_t num_rows;
 } Table;
 
-void table_insert_page(Table* table);
-void table_insert_record(Table* table, int64_t id, int32_t age, char* name);
+Table* create_table();
+void free_table(Table* table);
+int table_insert_page(Table* table);
+int table_insert_record(Table* table, int64_t id, int32_t age, const char* name);
 
 #endif //TABLE_H

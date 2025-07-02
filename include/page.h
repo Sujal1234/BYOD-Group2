@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
 
 #define MAX_NAME_SIZE 64 //Includes null character
 #define PAGE_SIZE 4096 //4 KB (kibibyte)
@@ -17,9 +18,12 @@ typedef struct {
 
 typedef struct {
     Row rows[NUM_ROWS_PAGE];
+    bool row_exists[NUM_ROWS_PAGE];
     size_t num_rows;
 } Page;
 
-void page_insert_row(Page* page, Row* row);
+Page* create_page();
+void free_page(Page* page);
+int page_insert_row(Page* page, const Row* row);
 
 #endif //PAGE_H
