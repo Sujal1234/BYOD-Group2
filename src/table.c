@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-
+#include<stdbool.h>
 #include "table.h"
 #include "page.h"
 
@@ -53,7 +53,7 @@ static int table_insert_row(Table* table, const Row* row){
     Page* target_page = NULL;
     
     for (int i = 0; i < table->num_pages; i++) {
-        if (table->pages[i] && table->pages[i]->num_rows < ROWS_PER_PAGE) {
+        if (table->pages[i] && table->pages[i]->num_rows < NUM_ROWS_PAGE) {
             target_page = table->pages[i];
             break;
         }
@@ -69,7 +69,7 @@ static int table_insert_row(Table* table, const Row* row){
 
     //Find first available row in the target page
     int slot = -1;
-    for (int i = 0; i < ROWS_PER_PAGE; i++) {
+    for (int i = 0; i < NUM_ROWS_PAGE; i++) {
         if (!target_page->row_exists[i]) {
             slot = i;
             break;
@@ -85,11 +85,13 @@ static int table_insert_row(Table* table, const Row* row){
     target_page->row_exists[slot] = true;
     target_page->num_rows++;
     table->num_rows++;
+    return 0;
 }
 
 int table_insert_record(Table* table, int64_t id, int32_t age, const char* name){
+    int return_flag=0;
     if(strlen(name)+1 > MAX_NAME_SIZE){
-        int return_flag = 0;
+        return_flag = 0;
         printf("Name too long\n");
         return_flag = 1;
     }
@@ -146,4 +148,63 @@ void print_table(Table* table){
             printf("\n");
         }
     }
+}
+
+bool delete_row_id(Table* table, int64_t id){
+    if(!table){
+        printf("Table is empty!");
+        return false;
+    }
+    else if(table->num_pages==0){
+        printf("Table is empty!");
+        return false;
+    }
+    // num_pages is stored as size_t so for type consistency, initializing i that way
+    for(size_t i =0;i<table->num_pages;i++){ 
+        Page* curr_page = table->pages[i];
+        // NUM_ROWS_PAGE is defined in page.h
+        for(size_t j=0;j<NUM_ROWS_PAGE;j++){ 
+            if (curr_page->row_exists[j] && curr_page->rows[j].id == id) {
+                    // Clear row record
+                    curr_page->row_exists[j] = false;
+                    curr_page->rows[j].id = 0;
+                    curr_page->rows[j].age = 0;
+                    curr_page->rows[j].name[0] = '\0';                    
+                    curr_page->num_rows--;
+                    table->num_rows--;
+                    printf("Row deleted!");
+                    return true;
+            } 
+        }
+    }
+    printf("No row has been found with the specified ID!");
+    return false;
+}
+
+bool delete_row_name(Table* table, const char* name){
+    if(!table){
+        printf("Table is empty!");
+        return false;
+    }
+    else if(table->num_pages==0){
+        printf("Table is empty!");
+        return false;
+    }
+    for(size_t i =0;i<table->num_pages;i++){
+        Page* curr_page = table->pages[i];
+        for(size_t j=0;j<NUM_ROWS_PAGE;j++){
+            if (curr_page->row_exists[j] && strcmp(curr_page->rows[j].name, name) == 0) {
+                    curr_page->row_exists[j] = false;
+                    curr_page->rows[j].id = 0;
+                    curr_page->rows[j].age = 0;
+                    curr_page->rows[j].name[0] = '\0';                    
+                    curr_page->num_rows--;
+                    table->num_rows--;
+                    printf("Row deleted!");
+                    return true;
+            } 
+        }
+    }
+    printf("No row has been found with the specified name!");
+    return false;
 }
