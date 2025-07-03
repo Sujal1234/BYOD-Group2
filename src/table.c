@@ -119,22 +119,27 @@ int table_insert_record(Table* table, int64_t id, int32_t age, const char* name)
 }
 
 void print_table(Table* table){
+    if(!table){
+        printf("Table is NULL\n");
+        return;
+    }
+
     if(table -> num_pages==0){  //if table is empty
         printf("Table is empty. No data to show\n");
         return;
     }
 
-    
-    for(size_t j = 0; j<table->num_pages; j++){
+    for(size_t i = 0; i < table->num_pages; i++){
 
-        Page* page = table->pages[j];
+        Page* page = table->pages[i];
         if(page!=NULL){ //if page is not empty
-            printf("Page no: %d\n", j);
+            printf("Page no: %d\n", i);
 
-            for(size_t k = 0; k<page->num_rows; k++){ 
-                Row* row = &page->rows[k];
+            for(size_t j = 0; j < page->num_rows; j++){ 
+                Row* row = &page->rows[j];
+                
                 if(row!=NULL)  //if row is not empty
-                    printf("S.No: %d, ID: %lld, AGE: %d, NAME = %s\n",k,row->id,row->age,row->name);
+                    printf("S.No: %d, ID: %lld, AGE: %d, NAME = %s\n", j, row->id, row->age, row->name);
                 
             }
 
