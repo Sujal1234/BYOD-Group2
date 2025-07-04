@@ -7,7 +7,6 @@
 #include "page.h"
 #include "table.h"
 
-
 int main(){
     Table* table = create_table();
 
@@ -50,7 +49,7 @@ int main(){
                 printf("Enter ID to delete: ");
                 scanf("%" SCNd64, &id);
                 
-                if(delete_row_id(table, id)) {
+                if(delete_row_id(table, id) == 0) {
                     printf("Record deleted successfully!\n");
                 } else {
                     printf("Failed to delete record!\n");
@@ -61,7 +60,7 @@ int main(){
                 printf("Enter Name to delete: ");
                 scanf("%s", name);
                 
-                if(delete_row_name(table, name)) {
+                if(delete_row_name(table, name) == 0) {
                     printf("Record deleted successfully!\n");
                 } else {
                     printf("Failed to delete record!\n");
