@@ -23,6 +23,23 @@ void free_table(Table* table){
 }
 
 int table_insert_page(Table* table){
+static int table_insert_row(Table* table, const Row* row);
+
+Table* create_table(){
+    Table* table = calloc(1, sizeof(Table));
+    return table;
+}
+
+void free_table(Table* table){
+    if(!table) return;
+    for (size_t i = 0; i < table->num_pages; i++)
+    {
+        free_page(table->pages[i]);
+    }
+    free(table);
+}
+
+int table_insert_page(Table* table){
     if(table->num_pages >= TABLE_MAX_PAGES){
         printf("Table is full, cannot insert more pages\n");
         return 1;
@@ -146,4 +163,32 @@ void print_table(Table* table){
             printf("\n");
         }
     }
+}
+    if(table_insert_row(table, &row)){
+        return 1;
+    }
+    return 0;
+}
+
+// Function to check for empty table.
+// Returns 0 if row is found, 1 otherwise.
+int scan(Table* table, int64_t id){
+    if(table->num_pages == 0){
+        printf("Table is empty. No rows to scan\n");
+        return 1;
+    }
+
+// Simple loop which scans all pages and all rows in those pages to look for valid rows
+    for(size_t i = 0; i < table->num_pages; i++){
+        Page* page = table->pages[i];
+        for(size_t j = 0; j < page->num_rows; j++){
+            Row* row = &page->rows[j];
+            if(row->id == id){
+                printf("Row found with id = %lld, age = %d, name = \"%s\"\n",(long long)id,row->age,row->name);
+                return 0;
+            }
+        }
+    }
+    printf("No row with id = %lld exists.\n",(long long)id);
+    return 1;
 }

@@ -19,5 +19,6 @@ void free_table(Table* table);
 int table_insert_page(Table* table);
 int table_insert_record(Table* table, int64_t id, int32_t age, const char* name);
 void print_table(Table* table);
+void scan(Table* table, int64_t id);
 
 #endif //TABLE_H
