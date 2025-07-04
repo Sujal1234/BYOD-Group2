@@ -136,24 +136,30 @@ void print_table(Table* table){
     }
 
     for(size_t i = 0; i < table->num_pages; i++){
-
         Page* page = table->pages[i];
-        if(page!=NULL){ //if page is not empty
-            printf("Page no: %zu\n", i);
 
-            for(size_t j = 0; j < page->num_rows; j++){ 
-                if(!page->row_exists[j]){
-                    continue;  //skip deleted rows
-                }
-                Row* row = &page->rows[j];
-                
-                if(row!=NULL)  //if row is not empty
-                    printf("S.No: %zu, ID: %" PRId64 ", AGE: %" PRId32 ", NAME = %s\n", j, row->id, row->age, row->name);
-                
+        if(page == NULL){
+            break;
+        }
+
+        printf("Page no: %zu\n", i);
+
+        size_t j = 0, rows_printed = 0;
+        while(rows_printed < page->num_rows){ 
+            if(!page->row_exists[j]){
+                j++;
+                continue;  // Skip deleted rows
             }
 
-            printf("\n");
+            Row* row = &page->rows[j];
+            assert(row != NULL);  // Ensure row is not NULL
+
+            printf("S.No: %zu, ID: %" PRId64 ", AGE: %" PRId32 ", NAME = %s\n",
+                rows_printed, row->id, row->age, row->name);
+            j++;
+            rows_printed++;
         }
+        printf("\n");
     }
 }
 
