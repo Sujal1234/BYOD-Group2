@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <math.h>
 
 
 typedef struct IndexNode {
@@ -16,24 +17,9 @@ typedef struct IndexNode {
     struct IndexNode* right;
 } IndexNode;
 
+int height(IndexNode * n);
 
-
-
-int height(IndexNode * n){ 
-    if(n->height == NULL){
-        return 0;
-    }else{
-        return n->height;
-    }
-}
-
-
-int balance_factor(IndexNode * n){  // avl balance = 0,-1,1
-    if(n== NULL){
-        return 0;
-    }
-    return height(n->left) - height(n->right);
-}
+int balance_factor(IndexNode * n);  // avl balance = 0,-1,1
 
 void index_insert(int64_t key, int page, int slot);
 bool index_find(int64_t key, int *page, int *slot);
