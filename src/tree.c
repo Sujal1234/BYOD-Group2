@@ -86,3 +86,24 @@ static IndexNode* root = NULL;
 void index_insert(int64_t key, int page, int slot) {
     root = avl_insert(root, key, page, slot);
 } 
+
+
+
+
+bool index_find(int64_t key, int *page, int *slot){
+    IndexNode* curr =root;
+
+    while(curr != NULL){
+        if(curr->key == key){
+            *page = curr-> page_index;
+            *slot = curr -> slot_index;
+            return true;
+        } else if(key < curr->key){
+            curr = curr->left;
+        } else{
+            curr = curr ->right;
+        }
+    }
+    return false;
+
+}
