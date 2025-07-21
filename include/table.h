@@ -20,7 +20,8 @@ void free_table(Table* table);
 int table_insert_page(Table* table);
 int table_insert_record(Table* table, int64_t id, int32_t age, const char* name);
 void print_table(Table* table);
-bool delete_row_id(Table* table, int64_t id);
-bool delete_row_name(Table* table, const char* name);
+int scan(Table* table, int64_t id);
+int delete_row_id(Table* table, int64_t id);
+int delete_row_name(Table* table, const char* name);
 
 #endif //TABLE_H
