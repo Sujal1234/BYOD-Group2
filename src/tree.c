@@ -87,9 +87,6 @@ void index_insert(int64_t key, int page, int slot) {
     root = avl_insert(root, key, page, slot);
 } 
 
-
-
-
 bool index_find(int64_t key, int *page, int *slot){
     IndexNode* curr =root;
 
@@ -106,4 +103,62 @@ bool index_find(int64_t key, int *page, int *slot){
     }
     return false;
 
+}
+
+static IndexNode* find_leftmost(IndexNode* node) {
+    while (node->left != NULL)
+        node = node->left;
+    return node;
+}
+
+static IndexNode* node_delete(IndexNode* node, int64_t key) {
+    if (node == NULL)
+        return node;
+
+    if (key < node->key)
+        node->left = node_delete(node->left, key);
+    else if (key > node->key)
+        node->right = node_delete(node->right, key);
+    else {
+        if (node->left == NULL || node->right == NULL) {
+            IndexNode* temp = node->left ? node->left : node->right;
+
+            if (temp == NULL) {
+                temp = node;
+                node = NULL;
+            } else {
+                *node = *temp;
+            }
+            free(temp);
+        } else {
+            IndexNode* temp = find_leftmost(node->right);
+
+            node->key = temp->key;
+            node->page_index = temp->page_index;
+            node->slot_index = temp->slot_index;
+
+            node->right = node_delete(node->right, temp->key);
+        }
+    }
+    if (node == NULL)
+        return node;
+    node->height = 1 + fmax(height(node->left), height(node->right));
+    int balance = balance_factor(node);
+    if (balance > 1 && balance_factor(node->left) >= 0)
+        return right_rotate(node);
+    if (balance > 1 && balance_factor(node->left) < 0) {
+        node->left = left_rotate(node->left);
+        return right_rotate(node);
+    }
+    if (balance < -1 && balance_factor(node->right) <= 0)
+        return left_rotate(node);
+    if (balance < -1 && balance_factor(node->right) > 0) {
+        node->right = right_rotate(node->right);
+        return left_rotate(node);
+    }
+    return node;
+}
+
+void index_delete(int64_t key) {
+    root = node_delete(root, key);
 }
