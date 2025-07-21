@@ -162,3 +162,4 @@ static IndexNode* node_delete(IndexNode* node, int64_t key) {
 void index_delete(int64_t key) {
     root = node_delete(root, key);
 }
+// Added by Ram
