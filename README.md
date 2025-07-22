@@ -46,8 +46,24 @@ Each record (row) consists of:
       bool   row_exists[NUM_ROWS_PAGE];
       size_t num_rows;  
   } Page;
-  
-  
+
+## Part 2: In-Memory Indexing with Binary Tree
+We have implemented a **self-balancing binary tree** (AVL) as an index to enable fast row retrieval using a primary key.  This index keeps track of each row’s location by storing its **page number** and **row number**, ensuring efficient lookups in **O(log N)** time.
+
+### Implemented Functions
+- **index_insert**: Add a new key.  
+- **index_find**: Check if the key exists.  
+- **index_delete**: Remove the key. 
+
+### New Files Added
+- **tree.c**
+  Contains the insert, find and delete functions for the AVL tree.
+
+- **tree.h** 
+  Contains the functions' declarations along with the arguments..
+
+
+
 ### Build Instructions
 
 1. Download the repository to your local system.
