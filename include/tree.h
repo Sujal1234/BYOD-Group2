@@ -1,13 +1,11 @@
 #ifndef TREE_H
 #define TREE_H
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <math.h>
-
 
 typedef struct IndexNode {
     int64_t key;

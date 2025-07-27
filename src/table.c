@@ -56,7 +56,6 @@ int table_find_id(Table* table, int64_t id, RowLoc* pos){
             return 0;
         }
     }
-    printf("No row with id = %lld exists.\n",(long long)id);
     pos->page_slot = -1;
     pos->row_slot = -1;
     return 1;
@@ -78,7 +77,6 @@ int table_find_name(Table* table, const char* name, RowLoc* pos){
             return 0;
         }
     }
-    printf("No row with id = %lld exists.\n",(long long)id);
     pos->page_slot = -1;
     pos->row_slot = -1;
     return 1;
@@ -142,7 +140,7 @@ int table_insert_record(Table* table, int64_t id, int32_t age, const char* name,
     };
     strcpy(row.name, name);
     strcpy(row.email, email);
-    return table_insert_row(table, &row);
+    return table_insert(table, &row);
 }
 
 // Returns 0 if row is successfully deleted, 1 otherwise.
@@ -157,7 +155,7 @@ int table_delete_id(Table* table, int64_t id){
     }
     for(size_t i = 0; i < table->num_pages; i++){ 
         Page* curr_page = table->pages[i];
-        size_t ind = page_find_row_id(curr_page, id);
+        int ind = page_find_row_id(curr_page, id);
         if(ind != -1) {
             return page_delete_row(curr_page, ind);
         }
@@ -178,7 +176,7 @@ int table_delete_name(Table* table, const char* name){
     }
     for(size_t i = 0; i < table->num_pages; i++){ 
         Page* curr_page = table->pages[i];
-        size_t ind = page_find_row_name(curr_page, name);
+        int ind = page_find_row_name(curr_page, name);
         if(ind != -1) {
             return page_delete_row(curr_page, ind);
         }
@@ -210,8 +208,8 @@ void table_print(Table* table){
             }
             Row* row = &page->rows[j];
             assert(row != NULL);  // Ensure row is not NULL
-            printf("S.No: %zu, ID: %" PRId64 ", AGE: %" PRId32 ", NAME = %s\n",
-                rows_printed, row->id, row->age, row->name);
+            printf("S.No: %zu, ID: %" PRId64 ", AGE: %" PRId32 ", NAME = %s, EMAIL = %s\n",
+                rows_printed, row->id, row->age, row->name, row->email);
             j++;
             rows_printed++;
         }

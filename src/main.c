@@ -8,6 +8,8 @@
 #include "table.h"
 #include "util.h"
 
+// needs fixing printing and scanf errors
+
 int main(){
     Table* table = create_table();
 
@@ -25,6 +27,8 @@ int main(){
     print_magenta("WELCOME TO THE GROUP 2 DATABASE\n");
 
     while(true) {
+        fflush(stdin);
+        fflush(stdout);
         print_yellow("Choose an option:\n");
         print_cyan("1. Insert Record\n");
         print_cyan("2. Delete Record by ID\n");
@@ -41,9 +45,11 @@ int main(){
                 scanf("%" SCNd32, &age);
                 print_yellow("Enter Name: ");
                 fgets(name, MAX_NAME_SIZE, stdin);
+                getchar();
                 name[strcspn(name, "\n")] = '\0';
                 print_yellow("Enter Email: ");
                 fgets(email, MAX_EMAIL_SIZE, stdin);
+                getchar();
                 email[strcspn(email, "\n")] = '\0';
                 
                 if(table_insert_record(table, id, age, name, email) == 0) {
@@ -56,7 +62,7 @@ int main(){
                 print_yellow("Enter ID to delete: ");
                 scanf("%" SCNd64, &id);
                 
-                if(table_delete_row_id(table, id) == 0) {
+                if(table_delete_id(table, id) == 0) {
                     print_green("Record deleted successfully!\n");
                 } else {
                     print_red("Failed to delete record!\n");
@@ -66,9 +72,10 @@ int main(){
             case 3:
                 print_yellow("Enter Name to delete: ");
                 fgets(name, MAX_NAME_SIZE, stdin);
+                getchar();
                 name[strcspn(name, "\n")] = '\0';
                 
-                if(table_delete_row_name(table, name) == 0) {
+                if(table_delete_name(table, name) == 0) {
                     print_green("Record deleted successfully!\n");
                 } else {
                     print_red("Failed to delete record!\n");
@@ -83,7 +90,7 @@ int main(){
             case 5:
                 print_magenta("Thank you for using Group 2 Database!\n");
                 return 0;
-                
+            
             default:
                 print_red("Invalid choice! Please try again.\n");
                 break;

@@ -8,20 +8,19 @@
 #define MAX_NAME_SIZE 32 //Includes null character
 #define MAX_EMAIL_SIZE 128 //Includes null character
 #define PAGE_SIZE 4096 //4 KB (kilobyte)
+#define NUM_ROWS_PAGE ((PAGE_SIZE - sizeof(size_t)) / (sizeof(Row) + sizeof(uint8_t)))
 
 typedef struct {
     int64_t id;
     int32_t age;
     char name[MAX_NAME_SIZE];
-    char email[MAX_EMAIL_SIZE]
+    char email[MAX_EMAIL_SIZE];
 } Row;
 
 typedef struct {
     uint8_t row_exists[NUM_ROWS_PAGE];
     size_t num_rows;
 } Header;
-
-#define NUM_ROWS_PAGE ((PAGE_SIZE - sizeof(Header)) / sizeof(Row))
 
 typedef struct {
     Header header;
