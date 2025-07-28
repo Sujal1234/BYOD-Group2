@@ -36,6 +36,8 @@ static int table_insert_page(Table* table){
         return 1;
     }
     table->pages[table->num_pages] = new_page;
+    new_page->header.page_id = table->num_pages; // Set the page ID
+    new_page->header.num_rows = 0; // Initialize number of rows
     table->num_pages++;
     return 0;
 }
