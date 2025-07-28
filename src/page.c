@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 #include "page.h"
 
 // Note that the row find loops run for NUM_ROWS_PAGE, as the page is fixed size

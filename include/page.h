@@ -12,7 +12,6 @@
 
 typedef struct {
     int64_t id;
-    int32_t age;
     char name[MAX_NAME_SIZE];
     char email[MAX_EMAIL_SIZE];
 } Row;

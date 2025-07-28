@@ -19,15 +19,14 @@ int balance_factor(IndexNode *n) {
 static IndexNode* create_index_node(int64_t key, int page, int slot) {
     IndexNode* node = (IndexNode*)malloc(sizeof(IndexNode));
     node->key = key;
-    node->page_index = page;
-    node->slot_index = slot;
+    node->pos.page_slot = page;
+    node->pos.row_slot = slot;
     node->height = 1;
     node->left = NULL;
     node->right = NULL;
     return node;
 }
 
-// Right rotate
 static IndexNode* right_rotate(IndexNode* y) {
     IndexNode* x = y->left;
     IndexNode* T2 = x->right;
@@ -38,7 +37,6 @@ static IndexNode* right_rotate(IndexNode* y) {
     return x;
 }
 
-// Left rotate
 static IndexNode* left_rotate(IndexNode* x) {
     IndexNode* y = x->right;
     IndexNode* T2 = y->left;
@@ -50,13 +48,13 @@ static IndexNode* left_rotate(IndexNode* x) {
 }
 
 // Recursive insert
-static IndexNode* avl_insert(IndexNode* node, int64_t key, int page, int slot) {
+static IndexNode* avl_insert(IndexNode* node, int64_t key, int page_slot, int row_slot) {
     if (node == NULL)
-        return create_index_node(key, page, slot);
+        return create_index_node(key, page_slot, row_slot);
     if (key < node->key)
-        node->left = avl_insert(node->left, key, page, slot);
+        node->left = avl_insert(node->left, key, page_slot, row_slot);
     else if (key > node->key)
-        node->right = avl_insert(node->right, key, page, slot);
+        node->right = avl_insert(node->right, key, page_slot, row_slot);
     else
         return node; // Duplicates not allowed
     node->height = 1 + fmax(height(node->left), height(node->right));
@@ -80,29 +78,24 @@ static IndexNode* avl_insert(IndexNode* node, int64_t key, int page, int slot) {
     return node;
 }
 
-// Root of the AVL tree
-static IndexNode* root = NULL;
-
-void index_insert(int64_t key, int page, int slot) {
-    root = avl_insert(root, key, page, slot);
+void index_insert(IndexNode** root, int64_t key, RowLoc pos) {
+    *root = avl_insert(*root, key, pos.page_slot, pos.row_slot);
 } 
 
-bool index_find(int64_t key, int *page, int *slot){
-    IndexNode* curr =root;
+int index_find(IndexNode** root, int64_t key, RowLoc* pos) {
+    IndexNode* curr = *root;
 
     while(curr != NULL){
         if(curr->key == key){
-            *page = curr-> page_index;
-            *slot = curr -> slot_index;
-            return true;
+            *pos = curr->pos; 
+            return 0;
         } else if(key < curr->key){
             curr = curr->left;
         } else{
             curr = curr ->right;
         }
     }
-    return false;
-
+    return 1;
 }
 
 static IndexNode* find_leftmost(IndexNode* node) {
@@ -114,7 +107,6 @@ static IndexNode* find_leftmost(IndexNode* node) {
 static IndexNode* node_delete(IndexNode* node, int64_t key) {
     if (node == NULL)
         return node;
-
     if (key < node->key)
         node->left = node_delete(node->left, key);
     else if (key > node->key)
@@ -122,7 +114,6 @@ static IndexNode* node_delete(IndexNode* node, int64_t key) {
     else {
         if (node->left == NULL || node->right == NULL) {
             IndexNode* temp = node->left ? node->left : node->right;
-
             if (temp == NULL) {
                 temp = node;
                 node = NULL;
@@ -132,10 +123,9 @@ static IndexNode* node_delete(IndexNode* node, int64_t key) {
             free(temp);
         } else {
             IndexNode* temp = find_leftmost(node->right);
-
             node->key = temp->key;
-            node->page_index = temp->page_index;
-            node->slot_index = temp->slot_index;
+            node->pos.page_slot = temp->pos.page_slot;
+            node->pos.row_slot = temp->pos.row_slot;
 
             node->right = node_delete(node->right, temp->key);
         }
@@ -159,7 +149,17 @@ static IndexNode* node_delete(IndexNode* node, int64_t key) {
     return node;
 }
 
-void index_delete(int64_t key) {
-    root = node_delete(root, key);
+void index_delete(IndexNode** root, int64_t key) {
+    *root = node_delete(*root, key);
 }
-// Added by Ram
+
+void free_index(IndexNode** root) {
+    if (*root == NULL)
+        return;
+    if((*root)->left)    
+        free_index(&(*root)->left);
+    if((*root)->right)
+        free_index(&(*root)->right);
+    free(*root);
+    *root = NULL;
+}
