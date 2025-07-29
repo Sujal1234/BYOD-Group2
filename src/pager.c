@@ -203,7 +203,7 @@ static int LRUCache_put(LRUCache* cache, Page* page, const char* data_dir) {
             DLLNode* lruNode = cache->tail;
             if (lruNode == NULL) { // Should not happen, but jic
                 printf("Cache size mismatch with tail pointer during removal!\n");
-                return;
+                return 1;
             }
             printf("Cache full. Removing LRU Page %d.\n", lruNode->page->header.page_id);
             removeNode(cache, lruNode);

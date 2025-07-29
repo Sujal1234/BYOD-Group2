@@ -8,7 +8,6 @@ struct Item {
 
 // Forward declarations of helper functions.
 static void deleteFromNode(IndexNode* node, int64_t key);
-static void free_node_recursive(IndexNode* node);
 
 static IndexNode* createNode() {
     IndexNode* node = calloc(1, sizeof(IndexNode));

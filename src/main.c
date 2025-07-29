@@ -177,9 +177,20 @@ int main() {
                 print_yellow("Deleting database files...\n");
                 // Clear the pager's data directory
                 if (table->pager && table->pager->data_dir) {
-                    char command[256];
-                    snprintf(command, sizeof(command), "rm -rf %s/*", table->pager->data_dir);
-                    system(command); // Use system call to delete files in the data directory
+                    char filepath[512];
+                    int deleted_count = 0;
+                        for (int i = 0; i < (int)table->num_pages; ++i) {
+                        // Construct the full file path
+                        snprintf(filepath, sizeof(filepath), "%s/page_%d.bin", table->pager->data_dir, i);
+                        printf("Attempting to delete: %s\n", filepath);
+                        if (remove(filepath) == 0) {
+                        printf("Successfully deleted: %s\n", filepath);
+                        deleted_count++;
+                        } else {
+                            printf("Could not delete: %s\n", filepath);
+                        }
+                    }
+                    printf("Deleted %d database files.\n", deleted_count);
                 }
                 print_magenta("Database files cleared successfully!\n");
                 free_table(table); 

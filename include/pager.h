@@ -13,6 +13,9 @@ typedef struct {
     const char* data_dir; // Directory where the pages are stored
 } Pager;
 
+int save_page(Page* page, const char* data_dir);
+Page* load_page(int page_id, const char* data_dir);
+
 Pager* create_pager(const char* data_dir);
 void free_pager(Pager* pager);
 Page* pager_get(Pager *pager, int page_id);

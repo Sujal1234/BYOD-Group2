@@ -26,7 +26,7 @@ Table* create_table(){
     int max_page = -1;
     size_t total_rows = 0;
     for (int i = 0; i < TABLE_MAX_PAGES; i++) {
-        Page* page = load_page(table->pager, i);
+        Page* page = load_page(i, table->pager->data_dir);
         if (page == NULL)
             break;
         max_page = i;
@@ -53,7 +53,7 @@ static int table_insert_page(Table* table){
         return 1;
     }
     
-    Page* new_page = table_get_page(table, table->num_pages); // TODO : check this
+    table_get_page(table, table->num_pages); // TODO : check this // This adds the page to LRU cache, and creates a new page if it doesn't exist
     table->num_pages++;
     return 0;
 }
