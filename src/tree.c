@@ -1,6 +1,6 @@
 #include "tree.h"
 
-int height(IndexNode *n) {
+static int height(IndexNode *n) {
     if (n == NULL) {
         return 0;
     } else {
@@ -8,7 +8,7 @@ int height(IndexNode *n) {
     }
 }
 
-int balance_factor(IndexNode *n) {
+static int balance_factor(IndexNode *n) {
     if (n == NULL) {
         return 0;
     }

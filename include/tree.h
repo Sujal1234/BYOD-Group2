@@ -7,10 +7,7 @@
 #include <stdbool.h>
 #include <math.h>
 
-typedef struct { // Pair to store a row's position
-    int32_t page_slot; // Index of page in table
-    int32_t row_slot;  // Index of row in page
-} RowLoc;
+#include "page.h" // For RowLoc
 
 typedef struct IndexNode {
     int64_t key; // row id
@@ -19,10 +16,6 @@ typedef struct IndexNode {
     struct IndexNode* left;
     struct IndexNode* right;
 } IndexNode;
-
-int height(IndexNode * n);
-
-int balance_factor(IndexNode * n);  // avl balance = 0,-1,1
 
 // can make the index and insert return, but not needed for now
 void index_insert(IndexNode** root, int64_t key, RowLoc pos); // Inserts a new node with key and position into the AVL tree

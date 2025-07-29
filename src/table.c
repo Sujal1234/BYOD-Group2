@@ -6,38 +6,40 @@
 #include <inttypes.h>
 
 #include "table.h"
-#include "page.h"
 
 static int table_insert_page(Table* table); // Inserts empty page
 
 Table* create_table(){
     Table* table = calloc(1, sizeof(Table));
+    if(table == NULL){
+        printf("Memory allocation for table failed!\n");
+        return NULL;
+    }
+    table->pager = create_pager("data"); // Initialize pager with a directory
+    if(table->pager == NULL){
+        free(table);
+        printf("Failed to create pager for table!\n");
+        return NULL; // Failed to create pager
+    }
     return table;
 }
 
 void free_table(Table* table){
     if(!table) return;
-    for (size_t i = 0; i < table->num_pages; i++)
-    {
-        free_page(table->pages[i]);
+    if(table->pager) {
+        free_pager(table->pager); // Free the pager
     }
+    free_index(&(table->root)); // Free the AVL tree
     free(table);
-    free_index(&table->root); // Free the AVL tree
 }
 
 static int table_insert_page(Table* table){
     if(table->num_pages >= TABLE_MAX_PAGES){
-        printf("Table is full, cannot insert more pages\n");
+        printf("Table is full, cannot insert more pages!\n");
         return 1;
     }
-    Page* new_page = (Page*) calloc(1, sizeof(Page));
-    if(new_page == NULL){
-        perror("Memory allocation of new page in table failed");
-        return 1;
-    }
-    table->pages[table->num_pages] = new_page;
-    new_page->header.page_id = table->num_pages; // Set the page ID
-    new_page->header.num_rows = 0; // Initialize number of rows
+    
+    Page* new_page = table_get_page(table, table->num_pages); // TODO : check this
     table->num_pages++;
     return 0;
 }
@@ -58,7 +60,7 @@ int table_find_id(Table* table, int64_t id, RowLoc* pos){
 
     // Simple loop which scans all pages and all rows in those pages to look for valid rows
     for(size_t i = 0; i < table->num_pages; i++){
-        Page* page = table->pages[i];
+        Page* page = table_get_page(table, i);
         int ind = page_find_row_id(page, id);
         if(ind != -1){
             pos->page_slot = i;
@@ -79,7 +81,7 @@ int table_find_name(Table* table, const char* name, RowLoc* pos){
     }
     // Simple loop which scans all pages and all rows in those pages to look for valid rows
     for(size_t i = 0; i < table->num_pages; i++){
-        Page* page = table->pages[i];
+        Page* page = table_get_page(table, i);
         int ind = page_find_row_name(page, name);
         if(ind != -1){
             pos->page_slot = i;
@@ -110,8 +112,9 @@ int table_insert(Table* table, const Row* row){
     Page* target_page = NULL;
     size_t i = 0;
     for (; i < table->num_pages; i++) {
-        if (table->pages[i] && table->pages[i]->header.num_rows < NUM_ROWS_PAGE) {
-            target_page = table->pages[i];
+        Page* pagee  = table_get_page(table, i);
+        if (pagee && pagee->header.num_rows < NUM_ROWS_PAGE) {
+            target_page = pagee;
             break;
         }
     }
@@ -120,7 +123,7 @@ int table_insert(Table* table, const Row* row){
         if(table_insert_page(table)){
             return 1;
         }
-        target_page = table->pages[table->num_pages - 1];
+        target_page = table_get_page(table, table->num_pages - 1);
     }
     table->num_rows++;
     // Insert the row into the target page
@@ -163,8 +166,10 @@ int table_insert_record(Table* table, int64_t id, const char* name, const char* 
         .name = "",
         .email = ""
     };
-    strcpy(row.name, name);
-    strcpy(row.email, email);
+    strncpy(row.name, name, MAX_NAME_SIZE);
+    row.name[MAX_NAME_SIZE - 1] = '\0';
+    strncpy(row.email, email, MAX_EMAIL_SIZE);
+    row.name[MAX_EMAIL_SIZE - 1] = '\0';
     return table_insert(table, &row);
 }
 
@@ -181,18 +186,19 @@ int table_delete_pos(Table* table, RowLoc pos) {
         printf("Invalid page slot\n");
         return 1;
     }
-    Page* target_page = table->pages[pos.page_slot];
+    Page* target_page = table_get_page(table, pos.page_slot);
     if(!target_page || pos.row_slot < 0 || pos.row_slot >= (int64_t)NUM_ROWS_PAGE){
         printf("Invalid row slot\n");
         return 1;
     }
+    int64_t id_to_delete = target_page->rows[pos.row_slot].id;
     int ret = page_delete_row(target_page, pos.row_slot);
     if(ret != 0){
         printf("Failed to delete row at position (%d, %d)\n", pos.page_slot, pos.row_slot);
         return 1;
     }
     table->num_rows--;
-    index_delete(&table->root, target_page->rows[pos.row_slot].id);
+    index_delete(&table->root, id_to_delete); // Delete from index
     return 0;
 }
 
@@ -218,11 +224,12 @@ int table_delete_id(Table* table, int64_t id){
         }
     }
 
-    for(size_t i = 0; i < table->num_pages; i++){ 
-        Page* curr_page = table->pages[i];
+    for(size_t i = 0; i < table->num_pages; i++){
+        Page* curr_page = table_get_page(table, i);
         int ind = page_find_row_id(curr_page, id);
         if(ind != -1) {
-            return page_delete_row(curr_page, ind);
+            RowLoc pos = { .page_slot = i, .row_slot = ind };
+            return table_delete_pos(table, pos); // Use the full deletion logic
         }
     }
     printf("No row has been found with the specified ID!\n");
@@ -240,10 +247,11 @@ int table_delete_name(Table* table, const char* name){
         return 1;
     }
     for(size_t i = 0; i < table->num_pages; i++){ 
-        Page* curr_page = table->pages[i];
+        Page* curr_page = table_get_page(table, i);
         int ind = page_find_row_name(curr_page, name);
         if(ind != -1) {
-            return page_delete_row(curr_page, ind);
+            RowLoc pos = { .page_slot = i, .row_slot = ind };
+            return table_delete_pos(table, pos); // Use the full deletion logic
         }
     }
     printf("No row has been found with the specified name!\n");
@@ -260,7 +268,7 @@ void table_print(Table* table){
         return;
     }
     for(size_t i = 0; i < table->num_pages; i++){
-        Page* page = table->pages[i];
+        Page* page = table_get_page(table, i);
         if(page == NULL){
             break;
         }
@@ -280,4 +288,11 @@ void table_print(Table* table){
         }
         printf("\n");
     }
+}
+
+Page* table_get_page(Table* table, int page_id) {
+    if(!table || page_id < 0) { // no check for page_id > table->num_pages as this function also handles page creation
+        return NULL; // Invalid table or page_id
+    }
+    return pager_get(table->pager, page_id); // Return the page with the given ID, NULL if not found
 }

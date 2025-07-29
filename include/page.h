@@ -27,6 +27,11 @@ typedef struct {
     Row rows[NUM_ROWS_PAGE];
 } Page;
 
+typedef struct { // Pair to store a row's position
+    int32_t page_slot; // Index of page in table
+    int32_t row_slot;  // Index of row in page
+} RowLoc;
+
 Page* create_page();
 void free_page(Page* page);
 int page_find_row_id(Page* page, int64_t id); // returns -1 on failure, else returns the slot index in page

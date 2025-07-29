@@ -57,7 +57,8 @@ Page* load_page(int page_id, const char* data_dir) {
 
     FILE* file = fopen(filename, "rb");
     if (file == NULL) {
-        printf("Failed to open file for loading page!\n");
+        //printf("Failed to open file for loading page!\n");
+        // not printing this, as it is expected that the page may not exist, and are created if it doesn't
         return NULL;
     }
 
@@ -216,11 +217,13 @@ static int LRUCache_put(LRUCache* cache, Page* page, const char* data_dir) {
 }
 
 // Free all memory associated with the LRU Cache
-static void free_LRUCache(LRUCache* cache) {
+static void free_LRUCache(LRUCache* cache, const char *data_dir) {
     if (cache == NULL) return;
     DLLNode* current_node = cache->head;
     while (current_node != NULL) {
         DLLNode* next_node = current_node->next;
+        save_page(current_node->page, data_dir); // Save the page to disk before freeing
+        // Free the actual Page data and the node itself
         free_page(current_node->page);
         free(current_node);           
         current_node = next_node;
@@ -251,7 +254,7 @@ Pager* create_pager(const char* data_dir) {
 
 void free_pager(Pager* pager) {
     if (pager == NULL) return;
-    free_LRUCache(pager->cache);
+    free_LRUCache(pager->cache, pager->data_dir); // Free the LRU Cache
     free(pager);
     printf("Pager freed successfully.\n");
 }
@@ -272,8 +275,14 @@ Page* pager_get(Pager *pager, int page_id) {
     printf("Loading Page %d from disk.\n", page_id);
     page = load_page(page_id, pager->data_dir);
     if (page == NULL) {
-        printf("Failed to load Page : %d!\n", page_id);
-        return NULL;
+        printf("Failed to load Page : %d! Creating page\n", page_id);
+        // If the page does not exist, create a new one
+        page = (Page*)calloc(1, sizeof(Page));
+        if (page == NULL) {
+            printf("Failed to allocate memory for new Page!\n");
+            return NULL;
+        }
+        page->header.page_id = page_id; // Set the new page ID
     }
 
     // Put the newly created page into the cache
@@ -282,6 +291,5 @@ Page* pager_get(Pager *pager, int page_id) {
         free_page(page); // Free the page if it could not be added to cache; This is a memory leak prevention
         return NULL;
     }
-
     return page; // Return the newly loaded page
 }

@@ -6,15 +6,16 @@
 #include <stdbool.h>
 
 #include "page.h"
-#include "tree.h"
+#include "btree.h"
+#include "pager.h"
 
 #define TABLE_MAX_PAGES 100
 
 typedef struct {
-    Page* pages[TABLE_MAX_PAGES];
     size_t num_pages;
     size_t num_rows;
     IndexNode* root; // Root of the AVL tree for indexing
+    Pager* pager; // Pager for managing pages
 } Table;
 
 // Note that this API provides no direct access to page insertion, deletion
@@ -31,5 +32,6 @@ int table_delete_pos(Table* table, RowLoc pos); // Deletes row at the given posi
 int table_delete_id(Table* table, int64_t id);
 int table_delete_name(Table* table, const char* name);
 void table_print(Table* table); // Prints whole table
+Page* table_get_page(Table* table, int page_id); // Returns the page with the given ID, NULL if not found
 
 #endif //TABLE_H

@@ -4,9 +4,10 @@
 #include <stdbool.h>
 #include <inttypes.h>
 
-#include "page.h"
 #include "table.h"
 #include "util.h"
+
+// TODO : the persistence will cause problem as any data files from past runs, aren't remembered by the program, in that case the pager will load old data, and refuse to take new inputs. Have a clear database option
 
 void clear_input_buffer() {
     int c;
@@ -76,7 +77,7 @@ int main() {
 
                 if (table_find_id(table, id, &pos) == 0) {
                     printf("Record found at Page: %d, Row: %d\n", pos.page_slot, pos.row_slot);
-                    Page* page = table->pages[pos.page_slot];
+                    Page* page = table_get_page(table, pos.page_slot);
                     Row* row = &page->rows[pos.row_slot]; 
                     printf("ID: %" PRId64 ", Name: %s, Email: %s\n", row->id, row->name, row->email);
                 } else {
@@ -90,7 +91,7 @@ int main() {
 
                 if (table_find_name(table, name, &pos) == 0) {
                     printf("Record found at Page: %d, Row: %d\n", pos.page_slot, pos.row_slot);
-                    Page* page = table->pages[pos.page_slot];
+                    Page* page = table_get_page(table, pos.page_slot);
                     Row* row = &page->rows[pos.row_slot]; 
                     printf("ID: %" PRId64 ", Name: %s, Email: %s\n", row->id, row->name, row->email);
                 } else {
@@ -104,7 +105,7 @@ int main() {
 
                 if (table_find_id(table, id, &pos) == 0) {
                     printf("Record found at Page: %d, Row: %d\n", pos.page_slot, pos.row_slot);
-                    Page* page = table->pages[pos.page_slot];
+                    Page* page = table_get_page(table, pos.page_slot);
                     Row* row = &page->rows[pos.row_slot]; 
 
                     print_yellow("Enter Name: ");
@@ -126,7 +127,7 @@ int main() {
 
                 if (table_find_name(table, name, &pos) == 0) {
                     printf("Record found at Page: %d, Row: %d\n", pos.page_slot, pos.row_slot);
-                    Page* page = table->pages[pos.page_slot];
+                    Page* page = table_get_page(table, pos.page_slot);
                     Row* row = &page->rows[pos.row_slot]; 
 
                     print_yellow("Enter Name: ");

@@ -4,7 +4,8 @@
 #define CACHE_SIZE 10 // Maximum number of pages in the cache
 #include "page.h"
 
-typedef struct  LRUCache;
+struct LRUCache;           // Forward declaration
+typedef struct LRUCache LRUCache; // Typedef alias
 // LRUCache is meant to be used by pager internally, so no need to access it directly from outside
 
 typedef struct {
