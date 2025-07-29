@@ -7,7 +7,6 @@
 #include "table.h"
 #include "util.h"
 
-// TODO : the persistence will cause problem as any data files from past runs, aren't remembered by the program, in that case the pager will load old data, and refuse to take new inputs. Have a clear database option
 
 void clear_input_buffer() {
     int c;
@@ -41,6 +40,7 @@ int main() {
         print_cyan("7. Delete Record by Name\n");
         print_cyan("8. Print All Records\n");
         print_cyan("9. Exit\n");
+        print_cyan("10.Delete database files and exit\n");
         print_yellow("Enter your choice: ");
         
         if (scanf("%d", &service) != 1) {
@@ -170,6 +170,18 @@ int main() {
                 break;
             case 9:
                 print_magenta("Thank you for using Group 2 Database!\n");
+                free_table(table); 
+                return 0;
+            case 10:
+                print_magenta("Thank you for using Group 2 Database!\n");
+                print_yellow("Deleting database files...\n");
+                // Clear the pager's data directory
+                if (table->pager && table->pager->data_dir) {
+                    char command[256];
+                    snprintf(command, sizeof(command), "rm -rf %s/*", table->pager->data_dir);
+                    system(command); // Use system call to delete files in the data directory
+                }
+                print_magenta("Database files cleared successfully!\n");
                 free_table(table); 
                 return 0;
             default:

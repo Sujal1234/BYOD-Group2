@@ -21,6 +21,20 @@ Table* create_table(){
         printf("Failed to create pager for table!\n");
         return NULL; // Failed to create pager
     }
+    // Scan existing data to determine highest page and total rows(Persistence of database) (Not the most efficient way, but works for educational purposes)
+    // A better way would be to store the number of pages and rows in a different file
+    int max_page = -1;
+    size_t total_rows = 0;
+    for (int i = 0; i < TABLE_MAX_PAGES; i++) {
+        Page* page = load_page(table->pager, i);
+        if (page == NULL)
+            break;
+        max_page = i;
+        total_rows += page->header.num_rows;
+        free_page(page); // Free the loaded page
+    }
+    table->num_pages = max_page + 1;
+    table->num_rows = total_rows;
     return table;
 }
 
