@@ -1,19 +1,26 @@
-CC = gcc
-CFLAGS = -MMD -Wall -Wextra -Iinclude -pedantic -g
+CC      = gcc
+CFLAGS  = -MMD -Wall -Wextra -Iinclude -pedantic -g
 
-SRC = $(wildcard src/*.c)
-OBJ = $(SRC:src/%.c=obj/%.o)
-DEP = $(SRC:src/%.c=obj/%.d)
+SRC_DIR = src
+OBJ_DIR = obj
 
+SRC = $(wildcard $(SRC_DIR)/*.c)
+OBJ = $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
+DEP = $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.d)
 EXE = out
 
-$(EXE) : $(OBJ)
+all: $(EXE)
+
+$(EXE): $(OBJ)
 	$(CC) $^ -o $@
 
-obj/%.o : src/%.c
+$(OBJ_DIR):
+	mkdir -p $@
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 -include $(DEP)
 
 clean:
-	rm -f $(OBJ) $(DEP) $(EXE)
+	rm -rf $(OBJ_DIR) $(EXE)

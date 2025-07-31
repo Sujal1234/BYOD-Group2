@@ -8,6 +8,7 @@ static inline void print_red(char* text){
     printf(START_ANSI "31m%s" END_ANSI, text);
 }
 
+
 static inline void print_green(char* text){
     printf(START_ANSI "32m%s" END_ANSI, text);
 }
