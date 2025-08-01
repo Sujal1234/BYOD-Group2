@@ -3,25 +3,35 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include<stdbool.h>
+#include <stdbool.h>
 
 #include "page.h"
+#include "btree.h"
+#include "pager.h"
 
 #define TABLE_MAX_PAGES 100
 
 typedef struct {
-    Page* pages[TABLE_MAX_PAGES];
     size_t num_pages;
     size_t num_rows;
+    IndexNode* root; // Root of the AVL tree for indexing
+    Pager* pager; // Pager for managing pages
 } Table;
+
+// Note that this API provides no direct access to page insertion, deletion
+// As pages are just internal implementation to deal with Rows 
+// The delete and find operations are done with fast indexing by default, if no indexing is found, it will do a linear search
 
 Table* create_table();
 void free_table(Table* table);
-int table_insert_page(Table* table);
-int table_insert_record(Table* table, int64_t id, int32_t age, const char* name);
-void print_table(Table* table);
-int scan(Table* table, int64_t id);
-int delete_row_id(Table* table, int64_t id);
-int delete_row_name(Table* table, const char* name);
+int table_find_id(Table* table, int64_t id, RowLoc* pos); // Updates RowLoc object, 1 if not found, 0 if found 
+int table_find_name(Table* table, const char* name, RowLoc* pos); // Updates RowLoc object, 1 if not found, 0 if found
+int table_insert(Table* table, const Row* row) ;// Inserts row, in the first empty page; const Row* as Row can be shallow copied
+int table_insert_record(Table* table, int64_t id, const char* name, const char* email); // Requires updation if struct Row is updated
+int table_delete_pos(Table* table, RowLoc pos); // Deletes row at the given position, returns 0 on success, 1 on failure
+int table_delete_id(Table* table, int64_t id);
+int table_delete_name(Table* table, const char* name);
+void table_print(Table* table); // Prints whole table
+Page* table_get_page(Table* table, int page_id); // Returns the page with the given ID, NULL if not found
 
 #endif //TABLE_H
