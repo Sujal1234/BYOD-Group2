@@ -50,6 +50,9 @@ Each record (row) consists of:
 ## Part 2: In-Memory Indexing with Binary Tree
 We have implemented a **self-balancing binary tree** (AVL) as an index to enable fast row retrieval using a primary key.  This index keeps track of each row’s location by storing its **page number** and **row number**, ensuring efficient lookups in **O(log N)** time.
 
+## Part 3: In-Memory Indexing with BTrees. Implemented Pager for Persistence of Datafiles.
+We changed the **self-balancing binary tree** (AVL) with **Btrees** as an index to enable fast row retrieval using a primary key. Implemented a pager layer between all file retrievals for persistence of storage. Implemented cache(LRU) using Doubly Linked Lists to lessen slow IO operations.
+
 ### Implemented Functions
 - **index_insert**: Add a new key.  
 - **index_find**: Check if the key exists.  
